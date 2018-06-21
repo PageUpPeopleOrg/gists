@@ -7,7 +7,7 @@ YELLOW=`tput setaf 3`
 RESET=`tput sgr0`
 
 function show_help {
-    echo "${BOLD}Hashicorp Application Install Script${RESET} - please run in sudo"
+    echo "${BOLD}Hashicorp Application Install Script${RESET} - run is sudo to install globally, or else it'll install only for the current user"
     echo ""
     echo "Basic usage: sudo ./$(basename $0) [options] [app-name]"
     echo "Example: sudo ./$(basename $0) -v 0.10.0 terraform"
@@ -18,7 +18,7 @@ function show_help {
     echo ""
     echo "${BOLD}Options${RESET}:"
     echo " ${BOLD}-v${RESET}: Version (Optional) - App version to install. Defaults to 'latest'."
-    echo " ${BOLD}-d${RESET}: Directory (Optional) - App installation directory. Defaults to '/usr/share/hashicorp'"
+    echo " ${BOLD}-d${RESET}: Directory (Optional) - App installation directory. Defaults to '/usr/share/hashicorp' in sudo, '~/.local/share' otherwise"
     echo " ${BOLD}-h${RESET}: Help - Show me this helpful message."
 }
 
@@ -53,7 +53,7 @@ while getopts "h:v:d:a:b:" opt; do
         VERSION=$OPTARG
         ;;
     d)
-        DIRECTORY=$OPTARG
+        INSTALL_DIRECTORY=$OPTARG
         ;;
     esac
 done
@@ -72,16 +72,15 @@ fi
 # Check if in sudo
 if [ "$EUID" -ne 0 ]
 then
-	show_help
 	echo ""
-  echo "${BOLD}ERROR:${YELLOW} Please run script with sudo.${RESET}"
-  exit
+  echo "${YELLOW}Installing for current user only. If you want to install globally, run with sudo.${RESET}"
+	echo ""
 fi
 
 # Check if unzip is available
 if ! [ -x "$(command -v unzip)" ]; then
-  echo "${YELLOW}Unzip is not installed, trying to install it via apt-get.${RESET}"
-  apt-get install unzip || exit 1
+  echo "${RED}Unzip is not installed, please install it.${RESET}"
+  exit 1
 fi
 
 check_http_status_silent '/dev/null' "https://releases.hashicorp.com/${APPLICATION}/" "${BOLD}ERROR${RESET}: ${APPLICATION} does not appear to exist. Please enter a valid application name."
@@ -106,28 +105,35 @@ else
   ARCHITECTURE="${OS}_386"
 fi
 
-if [ -z "${DIRECTORY}" ]; then
-  DIRECTORY=/usr/share/hashicorp
+if [ -z "${INSTALL_DIRECTORY}" ]; then
+	if [ "$EUID" -ne 0 ]
+	then
+		INSTALL_DIRECTORY=$HOME/.local/share/hashicorp
+		BIN_DIRECTORY=$HOME/.local/bin
+	else
+    INSTALL_DIRECTORY=/usr/share/hashicorp
+		BIN_DIRECTORY=/usr/bin
+  fi
 fi
 
 # Try to create the application directory.
-mkdir -p ${DIRECTORY} &>/dev/null
+mkdir -p ${INSTALL_DIRECTORY} &>/dev/null
 check_dir=`echo $?`
 if [ "${check_dir}" -ne 0 ]; then
-  echo -e "${BOLD}ERROR${RESET}: It appears ${DIRECTORY} does not exist and/or failed to create. Please run the script with sudo."
+  echo -e "${BOLD}ERROR${RESET}: It appears ${INSTALL_DIRECTORY} does not exist and/or failed to create."
   exit 1
 fi
 
 TMP="/tmp/${APPLICATION}.zip"
 
 # Download and extract the application.
-echo "${BOLD}NOTICE${RESET}: Downloading and Installing ${APPLICATION}_${VERSION}_${ARCHITECTURE} to ${DIRECTORY}"
+echo "${BOLD}NOTICE${RESET}: Downloading and Installing ${APPLICATION}_${VERSION}_${ARCHITECTURE} to ${INSTALL_DIRECTORY}"
 check_http_status "${TMP}" "https://releases.hashicorp.com/${APPLICATION}/${VERSION}/${APPLICATION}_${VERSION}_${ARCHITECTURE}.zip" "${BOLD}ERROR${RESET}: ${APPLICATION} ${VERSION} does not appear to exist. Please enter a valid application version."
-unzip -o "${TMP}" -d "${DIRECTORY}" &>/dev/null
+unzip -o "${TMP}" -d "${INSTALL_DIRECTORY}" &>/dev/null
 rm "${TMP}"
 
-# Create link to /usr/bin
-ln -fs  "${DIRECTORY}/${APPLICATION}" "/usr/bin/${APPLICATION}"
+# Create link to bin directory
+ln -fs  "${INSTALL_DIRECTORY}/${APPLICATION}" "${BIN_DIRECTORY}/${APPLICATION}"
 
 # If the user has elected to update their bash_profile, verify the app runs by outputting the version.
 verify=`${APPLICATION} version | head -1`
