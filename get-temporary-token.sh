@@ -29,7 +29,7 @@ function show_help {
 # Check if aws is available
 if ! [ -x "$(command -v aws)" ]; then
   echo "${RED}AWS CLI is not installed, please install it.${RESET}"
-  exit 1
+  return 1
 fi
 
 COMMAND=$1; shift
@@ -51,7 +51,7 @@ case "$COMMAND" in
 			if [ -z "$PROFILE" ]
 			then
 				echo "${RED}Profile must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 		PROFILE=${PREFIX}${PROFILE}
@@ -62,7 +62,7 @@ case "$COMMAND" in
 			if [ -z "$USER" ]
 			then
 				echo "${RED}Username must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -72,7 +72,7 @@ case "$COMMAND" in
 			if [ -z "$ROLE_NAME" ]
 			then
 				echo "${RED}Role must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -82,7 +82,7 @@ case "$COMMAND" in
 			if [ -z "$ACCOUNT_NUMBER" ]
 			then
 				echo "${RED}Account Number key must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -92,7 +92,7 @@ case "$COMMAND" in
 			if [ -z "$ACCESS_KEY" ]
 			then
 				echo "${RED}Access key must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -102,7 +102,7 @@ case "$COMMAND" in
 			if [ -z "$SECRET_KEY" ]
 			then
 				echo "${RED}Secret key must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -112,6 +112,7 @@ case "$COMMAND" in
     aws configure set aws_access_key_id ${ACCESS_KEY} --profile ${PROFILE}
     aws configure set aws_secret_access_key ${SECRET_KEY} --profile ${PROFILE}
     ;;
+
 
   get)
 		PROFILE=$1; shift
@@ -123,12 +124,12 @@ case "$COMMAND" in
 			if [ -z "$PROFILE" ]
 			then
 				echo "${RED}Profile must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 			# Check if profile exists
 			if ! [ -x "$(aws configure get aws_access_key_id --profile ${PREFIX}${PROFILE})" ]; then
 			  echo "${RED}Profile '${PROFILE}' does not exist.${RESET}"
-			  exit 1
+			  return 1
 			fi
 		fi
 		PROFILE=${PREFIX}${PROFILE}
@@ -139,7 +140,7 @@ case "$COMMAND" in
 			if [ -z "$TOKEN" ]
 			then
 				echo "${RED}MFA token must be specified.${RESET}"
-				exit 1
+				return 1
 			fi
 		fi
 
@@ -163,20 +164,59 @@ case "$COMMAND" in
 			export AWS_SESSION_TOKEN=`echo ${RESULT} | jq -r '.Credentials.SessionToken'`
 			export AWS_EXPIRATION="`echo ${RESULT} | jq -r '.Credentials.Expiration' | date -f -`"
 
-			echo "${BOLD}"
+			echo "${BOLD}${GREEN}SUCCESS!${RESET}"
+			echo ""
+			echo ""
+			echo "${BOLD}${YELLOW}LINUX / MAC${RESET}"
+			echo ""
 			echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
 			echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
 			echo "export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
 			echo "export AWS_SESSION_EXPIRATION=\"${AWS_EXPIRATION}\""
-			echo "${RESET}"
-			echo "${GREEN}EXPIRES `echo ${AWS_EXPIRATION}`${RESET}"
+			echo ""
+			echo ""
+			echo "${BOLD}${YELLOW}POWERSHELL${RESET}"
+			echo ""
+			echo "\$env:AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+			echo "\$env:AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+			echo "\$env:AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
+			echo ""
+			echo ""
+			echo "${BOLD}${YELLOW}CMD${RESET}"
+			echo ""
+			echo "set AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+			echo "set AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+			echo "set AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
+			echo ""
+			echo ""
+			echo "${GREEN}${BOLD}EXPIRES `echo ${AWS_EXPIRATION}`${RESET}"
 			echo ""
 			echo "${YELLOW}If you used 'source ./$(basename $0)', the environment variables are already set, if not, you need to copy/paste the above into your command line to set them.${RESET}"
 		fi
     ;;
 
+	expired)
+		if [ -z "$AWS_SESSION_EXPIRATION" ]
+		then
+			echo "${RED}AWS Session was never set in this terminal.${RESET}"
+			return 1
+		fi
+		EXPIRY="`echo $AWS_SESSION_EXPIRATION | date -f - +%s`"
+		if [[ `date +%s` -gt "$EXPIRY" ]]
+		then
+			echo ""
+			echo "${BOLD}${RED}SESSION IS EXPIRED.${RESET}"
+			echo ""
+			return 1
+		else
+			SECONDS_LEFT=$(($EXPIRY - `date +%s`))
+			echo ""
+			echo "${BOLD}${GREEN}SESSION IS STILL GOOD, $(($SECONDS_LEFT/60)) MINUTES LEFT.${RESET}"
+			echo ""
+		fi
+		;;
 
-  help|*)
-		show_help; exit 0
+	help|*)
+		show_help
     ;;
 esac
