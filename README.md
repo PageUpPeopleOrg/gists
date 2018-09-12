@@ -8,6 +8,8 @@ Great centralized place to put in tidbits of scripts that can be ran from anywhe
 * **Bash** using `source <(curl -s https://raw.githubusercontent.com/PageUpPeopleOrg/gists/master/YOUR-SCRIPT-HERE.sh)`
 * **Powershell** using `iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/PageUpPeopleOrg/gists/master/YOUR-SCRIPT-HERE.ps1'))`
 
+To have these scripts referenced locally for the specific user, run `echo "source <(curl -s https://raw.githubusercontent.com/PageUpPeopleOrg/gists/master/YOUR-SCRIPT-HERE.sh)" > ~/.local/bin/YOUR-SCRIPT-HERE.sh; chmod +x ~/.local/bin/YOUR-SCRIPT-HERE.sh`.
+
 ### install-hashicorp
 
 Installs the specified hashicorp product unto your local computer, uses the latest version if none are specified.
