@@ -12,13 +12,18 @@ Great centralized place to put in tidbits of scripts that can be ran from anywhe
 
 Installs the specified hashicorp product unto your local computer, uses the latest version if none are specified.
 
-`./install-hashicorp <consul|nomad|otto|packer|serf|terraform|vagrant|vault> [version]`
+`./install-hashicorp.sh [consul|nomad|otto|packer|serf|terraform|vagrant|vault] <version>`
 
 ### get-temporary-token
 
 Configures profiles for the various accounts/roles to be assumed.  
-First, configure a profile by doing `./get-temporary-token configure [profile-name] [some-user] [some-role] [role-account-number] [access-key] [secret-key]`, then get the token based on the profile created by running `./get-temporary-token get [profile-name] [mfa-token]`.
-You can check the status of your session by running `./get-temporary-token expired`.
+First, configure a profile by doing `./get-temporary-token.sh configure [profile-name] [some-user] [some-role] [role-account-number] [access-key] [secret-key]`, then get the token based on the profile created by running `./get-temporary-token get [profile-name] [mfa-token]`.
+You can check the status of your session by running `./get-temporary-token.sh expired`.
 
-For easier environment variable setting, run the script with `source ./get-temporary-token get [profile-name] [mfa-token]`.
+For easier environment variable setting, run the script with `source ./get-temporary-token.sh get [profile-name] [mfa-token]`.
 All information is stored in the [default AWS config/credential location](https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html) for better security.
+
+### rdp
+
+Connects to an RDP session for Linux/Mac using [xfreerdp2](https://launchpad.net/~remmina-ppa-team/+archive/ubuntu/remmina-next).
+Simply run `./rdp [IP]<:PORT>`, it will prompt you for your username and password, or you can set them inline by using the option `-u <username> -p <password>`.
