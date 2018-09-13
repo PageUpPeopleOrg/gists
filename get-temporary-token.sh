@@ -98,17 +98,34 @@ case "$COMMAND" in
 
 		if [ -z "$SECRET_KEY" ]
 		then
+			echo -n "Secret Access Key: "
 			unset SECRET_KEY
-			prompt="Secret Access Key: "
-			while IFS= read -p "$prompt" -r -s -n 1 char
+			unset CHARCOUNT
+			CHARCOUNT=0
+			stty -echo
+			while IFS= read -p "$PROMPT" -r -s -n 1 CHAR
 			do
-			    if [[ ${char} == $'\0' ]]
-			    then
+			    # Enter - accept SECRET_KEY
+			    if [[ $CHAR == $'\0' ]] ; then
 			        break
 			    fi
-			    prompt='*'
-			    SECRET_KEY+="$char"
+			    # Backspace
+			    if [[ $CHAR == $'\177' ]] ; then
+			        if [ $CHARCOUNT -gt 0 ] ; then
+			            CHARCOUNT=$((CHARCOUNT-1))
+			            PROMPT=$'\b \b'
+			            SECRET_KEY="${SECRET_KEY%?}"
+			        else
+			            PROMPT=''
+			        fi
+			    else
+			        CHARCOUNT=$((CHARCOUNT+1))
+			        PROMPT='*'
+			        SECRET_KEY+="$CHAR"
+			    fi
 			done
+			stty echo
+
 			if [ -z "$SECRET_KEY" ]
 			then
 				echo "${RED}Secret key must be specified.${RESET}"
