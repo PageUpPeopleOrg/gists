@@ -92,6 +92,7 @@ then
 	    prompt='*'
 	    PASSWORD+="$char"
 	done
+	echo ""
 	if [ -z "$PASSWORD" ]
 	then
 		echo "${RED}Password must be specified.${RESET}"
