@@ -125,6 +125,7 @@ case "$COMMAND" in
 			    fi
 			done
 			stty echo
+			echo ""
 
 			if [ -z "$SECRET_KEY" ]
 			then

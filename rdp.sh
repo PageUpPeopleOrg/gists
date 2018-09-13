@@ -108,6 +108,7 @@ then
 	    fi
 	done
 	stty echo
+	echo ""
 	if [ -z "$PASSWORD" ]
 	then
 		echo "${RED}Password must be specified.${RESET}"
