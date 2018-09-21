@@ -182,6 +182,7 @@ case "$COMMAND" in
 		unset AWS_SESSION_TOKEN
 		unset AWS_ACCESS_KEY_ID
 		unset AWS_SECRET_ACCESS_KEY
+		unset AWS_EXPIRATION
 
 		RESULT=`aws sts assume-role --role-arn arn:aws:iam::${ACCOUNT_NUMBER}:role/${ROLE_NAME} --role-session-name ${PROFILE} --duration-seconds 3600 --serial-number arn:aws:iam::254809263639:mfa/${USER} --token-code ${TOKEN} --profile ${PROFILE}`
 
@@ -200,7 +201,7 @@ case "$COMMAND" in
 			echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
 			echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
 			echo "export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
-			echo "export AWS_SESSION_EXPIRATION=\"${AWS_EXPIRATION}\""
+			echo "export AWS_EXPIRATION=\"${AWS_EXPIRATION}\""
 			echo ""
 			echo ""
 			echo "${BOLD}${YELLOW}POWERSHELL${RESET}"
@@ -224,12 +225,12 @@ case "$COMMAND" in
     ;;
 
 	expired)
-		if [ -z "$AWS_SESSION_EXPIRATION" ]
+		if [ -z "$AWS_EXPIRATION" ]
 		then
 			echo "${RED}AWS Session was never set in this terminal.${RESET}"
 			return 1
 		fi
-		EXPIRY="`echo $AWS_SESSION_EXPIRATION | date -f - +%s`"
+		EXPIRY="`echo ${AWS_EXPIRATION} | date -f - +%s`"
 		if [[ `date +%s` -gt "$EXPIRY" ]]
 		then
 			echo ""
