@@ -7,6 +7,7 @@ YELLOW=`tput setaf 3`
 RESET=`tput sgr0`
 
 PREFIX="tmp-token-"
+CONFIGFILE_PATH="${HOME}/.aws/config"
 
 function show_help {
     echo "${GREEN}${BOLD}AWS Assumed Role Temporary Token Utility${RESET}"
@@ -24,6 +25,15 @@ function show_help {
     echo " ${YELLOW}configure${RESET}: Create profile for particular session."
     echo " ${YELLOW}help${RESET}: Show this helpful message."
     echo ""
+}
+
+function show_profiles {
+		TITLE=$1
+		if [ -z "$TITLE" ]
+		then
+			TITLE="Available Profiles"
+		fi
+		echo "${TITLE}: `sed -n 's#\[profile '${PREFIX}'\(.*\)\]#\1#p' ${CONFIGFILE_PATH} | tr '\n' ' '`"
 }
 
 # Check if aws is available
@@ -141,6 +151,9 @@ case "$COMMAND" in
     aws configure set aws_secret_access_key ${SECRET_KEY} --profile ${PROFILE}
     ;;
 
+	profiles)
+		show_profiles "Configured Profiles"
+		;;
 
   get)
 		PROFILE=$1; shift
@@ -148,6 +161,7 @@ case "$COMMAND" in
 
     if [ -z "$PROFILE" ]
 		then
+			show_profiles
 			read -p "Profile Name: " PROFILE
 			if [ -z "$PROFILE" ]
 			then
