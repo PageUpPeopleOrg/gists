@@ -12,7 +12,7 @@ To have these scripts referenced locally for the specific user, run `echo "sourc
 
 ### install-hashicorp
 
-Installs the specified hashicorp product unto your local computer, uses the latest version if none are specified.
+Installs the specified HashiCorp product unto your local computer, uses the latest version if none are specified.
 
 `./install-hashicorp.sh [consul|nomad|otto|packer|serf|terraform|vagrant|vault] <version>`
 
