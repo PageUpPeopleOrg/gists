@@ -121,7 +121,7 @@ ARGS=("/v:${ADDRESS}" "/u:$USERNAME" "/p:$PASSWORD")
 
 if ! [ -z "$GATEWAY" ]
 then
-	ARGS+=("/g:$GATEWAY")
+	ARGS+=("/g:$GATEWAY /gu:$USERNAME /gp:$PASSWORD")
 fi
 
 if ! [ -z "$DOMAIN" ]
