@@ -131,4 +131,5 @@ fi
 
 echo "${YELLOW}Connecting to RDP session at ${ADDRESS}.${RESET}";
 
-xfreerdp +window-drag +clipboard +home-drive +heartbeat +fonts /dynamic-resolution /gdi:hw ${ARGS[*]}
+xfreerdp +window-drag +clipboard +home-drive +heartbeat +fonts /dynamic-resolution /gdi:hw /src:rdp /sec:tls ${ARGS[*]}
+
