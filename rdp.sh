@@ -18,11 +18,12 @@ function show_help {
     echo " ${YELLOW}-p${RESET}: password"
     echo " ${YELLOW}-g${RESET}: gateway address"
     echo " ${YELLOW}-d${RESET}: domain"
+    echo " ${YELLOW}-l${RESET}: set log level"
     echo ""
 }
 
 # Gather options from flags.
-while getopts "u:p:g:d:h:debug:help" opt; do
+while getopts "u:p:g:d:l:h:help" opt; do
     case "$opt" in
 	    u)
 	        USERNAME=$OPTARG
@@ -36,9 +37,9 @@ while getopts "u:p:g:d:h:debug:help" opt; do
 	    d)
 	        DOMAIN=$OPTARG
 	        ;;
-	    debug)
-                DEBUG=true
-                ;;
+	    l)
+            LOGLEVEL=$OPTARG
+            ;;
 	    h|help|\?)
 	        show_help
 	        exit 0
@@ -132,9 +133,9 @@ then
 	ARGS+=("/gd:$DOMAIN")
 fi
 
-if [ "$DEBUG" = true ]
+if ! [ -z "$LOGLEVEL" ]
 then
-        ARGS+=("/log-level:TRACE")
+    ARGS+=("/log-level:$(echo $LOGLEVEL | tr '[:lower:]' '[:upper:]')")
 fi
 
 echo "${YELLOW}Connecting to RDP session at ${ADDRESS}.${RESET}";
